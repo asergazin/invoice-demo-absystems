@@ -65,25 +65,39 @@ Output valid JSON according to schema. Output only the JSON.`;
     required: ['registry'],
   };
 
-  const response = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-    contents: [
-      {
-        parts: [
-          { text: userPrompt || 'Extract invoice details carefully.' },
-          { inlineData: { data: fileBase64, mimeType } },
-        ],
+  try {
+    const response = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+      contents: [
+        {
+          parts: [
+            { text: userPrompt || 'Extract invoice details carefully.' },
+            { inlineData: { data: fileBase64, mimeType } },
+          ],
+        },
+      ],
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema,
+        temperature: 0,
       },
-    ],
-    config: {
-      systemInstruction,
-      responseMimeType: 'application/json',
-      responseSchema,
-      temperature: 0,
-    },
-  });
+    });
 
-  const text = response.text;
-  if (!text) throw new Error('Empty Gemini response');
-  return JSON.parse(text.trim());
+    const text = response.text;
+    if (!text) throw new Error('Empty Gemini response');
+    return JSON.parse(text.trim());
+  } catch (error) {
+    const message = error?.message || JSON.stringify(error);
+
+    if (message.includes('API_KEY_INVALID') || message.includes('API key not valid')) {
+      throw new Error('Gemini API key недействителен. Создайте новый ключ в Google AI Studio и обновите GEMINI_API_KEY на сервере.');
+    }
+
+    if (message.includes('RESOURCE_EXHAUSTED') || message.toLowerCase().includes('quota')) {
+      throw new Error('Лимит Gemini API исчерпан. Проверьте квоту или используйте другой API key.');
+    }
+
+    throw error;
+  }
 }
