@@ -1,0 +1,10 @@
+node_modules
+.npm-cache
+dist
+.deploy-tmp
+.git
+.agents
+.env
+.env.*
+!.env.example
+npm-debug.log*

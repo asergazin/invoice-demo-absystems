@@ -1,0 +1,8 @@
+{
+  "name": "A&B Systems Construction Company",
+  "description": "Интеллектуальная система обработки реестров счетов на оплату с использованием Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
